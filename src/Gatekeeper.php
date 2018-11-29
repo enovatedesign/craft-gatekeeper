@@ -95,6 +95,22 @@ class Gatekeeper extends Plugin
         return Craft::$app->getRequest()->getCookies()->get('gatekeeper') !== null;
     }
 
+    /**
+     * @return bool
+     */
+    public function isEnabled(): bool
+    {
+        return (bool) Gatekeeper::$plugin->getSettings()->password;
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldRedirect(): bool
+    {
+        return $this->isEnabled() && $this->isGuest() && !$this->isAuthenticated() && !$this->isGatekeeperRequest();
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -142,7 +158,7 @@ class Gatekeeper extends Plugin
                     __METHOD__
                 );
 
-                if ($this->isGuest() && !$this->isAuthenticated() && !$this->isGatekeeperRequest()) {
+                if ($this->shouldRedirect()) {
                     Craft::$app->getResponse()->redirect('/gatekeeper');
                 }
             }
